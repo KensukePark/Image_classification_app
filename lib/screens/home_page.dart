@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_tflite/flutter_tflite.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -27,8 +28,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // 모델과 label.txt를 가져온다.
-  loadModel() async {
+  // 모델과 라벨을 가져오는 함수
+  void loadModel() async {
     await Tflite.loadModel(
       model: "assets/mobilenet_v1_1.0_224.tflite",
       labels: "assets/labels.txt",
@@ -39,13 +40,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // 비동기 처리를 통해 카메라와 갤러리에서 이미지를 가져온다.
+  // 이미지를 가져와서 분류하는 함수
   Future getImage(ImageSource imageSource) async {
     final image = await picker.pickImage(source: imageSource);
     setState(() {
-      _image = File(image!.path); // 가져온 이미지를 _image에 저장
+      _image = File(image!.path);
     });
-    await classifyImage(File(image!.path)); // 가져온 이미지를 분류 하기 위해 await을 사용
+    await classifyImage(File(image!.path));
   }
 
   // 이미지 분류
@@ -81,6 +82,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  //분석 결과를 출력하여 보여줄 위젯
   Widget resultsList(List? results) {
     if (results == null) {
       return Container();
@@ -119,62 +121,26 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _showBottomSheet() {
-    return showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(25),
-        ),
-      ),
-      builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            TextButton(
-              onPressed: () async {
-                await getImage(ImageSource.camera);
-                stopwatch.start();
-                if (stopwatch.elapsed.inMilliseconds == 0) time = '0ms 미만';
-                else time = stopwatch.elapsed.inMilliseconds.toString() + 'ms';
-                stopwatch.stop();
-              },
-              child: const Text('사진 촬영'),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Divider(
-              thickness: 3,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            TextButton(
-              onPressed: () async {
-                await getImage(ImageSource.gallery);
-                stopwatch.start();
-                if (stopwatch.elapsed.inMilliseconds == 0) time = '0ms 미만';
-                else time = stopwatch.elapsed.inMilliseconds.toString() + 'ms';
-                stopwatch.stop();
-              },
-              child: const Text('갤러리'),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-          ],
-        );
-      },
-    );
+  //카메라 촬영으로 이미지를 받을 함수
+  void FromCamera() async {
+    await getImage(ImageSource.camera);
+    stopwatch.start();
+    if (stopwatch.elapsed.inMilliseconds == 0) time = '0ms 미만';
+    else time = stopwatch.elapsed.inMilliseconds.toString() + 'ms';
+    stopwatch.stop();
+  }
+
+  //갤러리에서 이미지를 받을 함수
+  void FromGallery() async {
+    await getImage(ImageSource.gallery);
+    stopwatch.start();
+    if (stopwatch.elapsed.inMilliseconds == 0) time = '0ms 미만';
+    else time = stopwatch.elapsed.inMilliseconds.toString() + 'ms';
+    stopwatch.stop();
   }
 
   @override
   Widget build(BuildContext context) {
-    // 화면 세로 고정
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return Scaffold(
@@ -211,16 +177,23 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(height: 15,),
                     Container(
-                      padding: EdgeInsets.all(15),
+                      padding: EdgeInsets.only(right: 15, bottom: 15),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[
-                          FloatingActionButton(
-                            child: Icon(Icons.wallpaper),
-                            tooltip: 'pick Iamge',
-                            onPressed: () {
-                              _showBottomSheet();
-                            },
+                          SpeedDial(
+                            backgroundColor: Colors.black,
+                            icon: Icons.add,
+                            children: [
+                              SpeedDialChild(
+                                child: Icon(Icons.photo_camera),
+                                onTap: () => FromCamera(),
+                              ),
+                              SpeedDialChild(
+                                child: Icon(Icons.wallpaper),
+                                onTap: () => FromGallery(),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -230,14 +203,13 @@ class _HomePageState extends State<HomePage> {
               )
             ],
           ),
-        )
+        ),
     );
   }
-
-  // 앱이 종료될 때
   @override
   void dispose() {
     Tflite.close();
     super.dispose();
   }
 }
+
