@@ -17,7 +17,6 @@ class _HomePageState extends State<HomePage> {
   File? _image;
   final picker = ImagePicker();
   List? _outputs;
-  Stopwatch stopwatch = new Stopwatch();
   var time;
   final to_mili = DateFormat('HH:mm:ss.S');
   @override
@@ -29,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // 모델과 라벨을 가져오는 함수
-  void loadModel() async {
+   loadModel() async {
     await Tflite.loadModel(
       model: "assets/mobilenet_v1_1.0_224.tflite",
       labels: "assets/labels.txt",
@@ -123,6 +122,7 @@ class _HomePageState extends State<HomePage> {
 
   //카메라 촬영으로 이미지를 받을 함수
   void FromCamera() async {
+    Stopwatch stopwatch = new Stopwatch();
     await getImage(ImageSource.camera);
     stopwatch.start();
     if (stopwatch.elapsed.inMilliseconds == 0) time = '0ms 미만';
@@ -132,6 +132,7 @@ class _HomePageState extends State<HomePage> {
 
   //갤러리에서 이미지를 받을 함수
   void FromGallery() async {
+    Stopwatch stopwatch = new Stopwatch();
     await getImage(ImageSource.gallery);
     stopwatch.start();
     if (stopwatch.elapsed.inMilliseconds == 0) time = '0ms 미만';

@@ -1,6 +1,6 @@
 # image_classification_app
 
-Make Image classification model 
+Make Image classification model
 
 # Environment
 Android Studio Electric Eel | 2022.1.1 Patch 1 <br>
